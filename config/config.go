@@ -27,6 +27,28 @@ type Config struct {
 	publishUrl   string `json:"publishUrl"`
 }
 
+func loadConfigFromHTTP(configURL string) (*Config, error) {
+	resp, err := http.Get(configURL)
+	if err != nil {
+		log.Println("error in loading config from config url: ", err)
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("error in reading config resp: ", err)
+		return nil, err
+	}
+	var config Config
+	err = json.Unmarshal(body, &config)
+	if err != nil {
+		log.Println("Unmarshal http config  error: ", err)
+		return nil, err
+	}
+	return &config, nil
+
+}
+
 func LoadConfig() (*Config, error) {
 	_, dirname, _, _ := runtime.Caller(0)
 	filePath := path.Join(filepath.Dir(dirname), "config.json")
@@ -35,8 +57,6 @@ func LoadConfig() (*Config, error) {
 		log.Println("Read config file error: ", err)
 		return nil, err
 	}
-	// log.Info(string(content))
-
 	var config Config
 	err = json.Unmarshal(content, &config)
 	if err != nil {
@@ -44,28 +64,15 @@ func LoadConfig() (*Config, error) {
 		return nil, err
 	}
 	if config.ConfigUrl != "" {
-		resp, err := http.Get(config.ConfigUrl)
-		if err != nil {
-			log.Println("error in loading config from config url: ", err)
-		}
-		defer resp.Body.Close()
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Println("error in reading config resp: ", err)
-		} else {
-			var config2 Config
-			err = json.Unmarshal(body, &config2)
-			if err != nil {
-				log.Println("Unmarshal http config  error: ", err)
-			} else {
-				overrideConfig(&config, &config2)
-			}
+		config2, err := loadConfigFromHTTP(config.ConfigUrl)
+		if err == nil {
+			overrideConfig(&config, config2)
 		}
 	}
 	return &config, nil
 }
 
-// override value of first from second
+// merge & override value of first from second
 func overrideConfig(config1 *Config, config2 *Config) {
 
 }
