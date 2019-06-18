@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
-	"net/http"
 	"path"
 	"path/filepath"
 	"runtime"
+
+	customHttp "github.com/kundan1301/message-broker/http"
 )
 
 /*Config struct stores configs defined in config.json file
@@ -28,13 +29,7 @@ type Config struct {
 }
 
 func loadConfigFromHTTP(configURL string) (*Config, error) {
-	resp, err := http.Get(configURL)
-	if err != nil {
-		log.Println("error in loading config from config url: ", err)
-		return nil, err
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := customHttp.Get(configURL)
 	if err != nil {
 		log.Println("error in reading config resp: ", err)
 		return nil, err
