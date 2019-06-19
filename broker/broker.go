@@ -9,7 +9,7 @@ import (
 
 // Broker store broker info
 type Broker struct {
-	config *config.Config
+	Config *config.Config
 }
 
 func checkConfig(config *config.Config) error {
@@ -42,7 +42,7 @@ func NewBroker(config *config.Config) (*Broker, error) {
 		return nil, err
 	}
 	broker := &Broker{
-		config: config,
+		Config: config,
 	}
 	return broker, nil
 }

@@ -20,6 +20,6 @@ func main() {
 		log.Fatal("error in intializing new broker")
 	}
 
-	fmt.Printf("%+v\n", *config)
+	fmt.Printf("%+v\n", b.Config)
 
 }
