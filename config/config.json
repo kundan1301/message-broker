@@ -2,6 +2,16 @@
     "host":"0.0.0.0",
     "mqttPort":"1883",
     "httpPort":"8080",
-    "nodeIP":"192.168.0.101"
+    "nodeIP":"192.168.0.101",
+    "redisOptions":{
+        "Addr":"localhost:6379",
+        "Password": "", 
+        "DB":0
+    },
+    "redisClusterOptions":{
+        "Addrs":["localhost:6379"]
+    
+    },
+    "useRedisCluster": false
 
 }

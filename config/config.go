@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/go-redis/redis"
+
 	customHttp "github.com/kundan1301/message-broker/http"
 )
 
@@ -15,17 +17,21 @@ import (
 NodeIp will be used to communicate with other node in cluster/autoscaling group
 ConfigUrl will be used to load config from that url, if its specified file config will be overridden
 */
+
 type Config struct {
-	Host         string `json:"host"`
-	MqttPort     string `json:"mqttPort"`
-	HttpPort     string `json:"httpPort"`
-	MqttTlsPort  string `json:"mqttTlsPort"`
-	HttpTlsPort  string `json:"httpTlsPort"`
-	NodeIP       string `json:"nodeIP"`
-	ConfigUrl    string `json:"configUrl"`
-	AuthUrl      string `json:"authUrl"`
-	SubscribeUrl string `json:"subscribeUrl"`
-	publishUrl   string `json:"publishUrl"`
+	Host                string               `json:"host"`
+	MqttPort            string               `json:"mqttPort"`
+	HttpPort            string               `json:"httpPort"`
+	MqttTlsPort         string               `json:"mqttTlsPort"`
+	HttpTlsPort         string               `json:"httpTlsPort"`
+	NodeIP              string               `json:"nodeIP"`
+	ConfigUrl           string               `json:"configUrl"`
+	AuthUrl             string               `json:"authUrl"`
+	SubscribeUrl        string               `json:"subscribeUrl"`
+	PublishUrl          string               `json:"publishUrl"`
+	RedisOptions        redis.Options        `json:"redisOptions"`
+	RedisClusterOptions redis.ClusterOptions `json:"redisClusterOptions"`
+	UseRedisCluster     bool                 `json:useRedisCluster`
 }
 
 func loadConfigFromHTTP(configURL string) (*Config, error) {
