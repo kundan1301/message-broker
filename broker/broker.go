@@ -23,7 +23,7 @@ func checkConfig(config *config.Config) error {
 		return errors.New("HttpPort is required")
 	}
 	if config.UseRedisCluster {
-		if config.RedisClusterOptions.Addrs == nil || len(config.RedisClusterOptions.Addrs) == 0 {
+		if len(config.RedisClusterOptions.Addrs) == 0 {
 			return errors.New("Cluster host is required")
 		}
 	} else {
@@ -34,7 +34,7 @@ func checkConfig(config *config.Config) error {
 	return nil
 }
 
-// NewBroker intialize broker
+// NewBroker initialize broker
 func NewBroker(config *config.Config) (*Broker, error) {
 	err := checkConfig(config)
 	if err != nil {
@@ -45,4 +45,17 @@ func NewBroker(config *config.Config) (*Broker, error) {
 		Config: config,
 	}
 	return broker, nil
+}
+
+func (b *Broker) Start() {
+	// hostUrl := b.Config.Host + ":" + b.Config.MqttPort
+	// l, err := net.Listen("tcp", hostUrl)
+	// if err != nil {
+	// 	log.Println("error in listening mqtt", err)
+	// 	return
+	// }
+	// for {
+
+	// }
+
 }
