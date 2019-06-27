@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/kundan1301/message-broker/broker"
@@ -21,6 +20,7 @@ func main() {
 	if err != nil {
 		log.Fatal("error in intializing new broker")
 	}
-	fmt.Printf("%+v\n", b.Config)
+	//fmt.Printf("%+v\n", b.Config)
+	b.Start()
 
 }

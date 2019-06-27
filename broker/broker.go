@@ -3,7 +3,9 @@ package broker
 import (
 	"errors"
 	"log"
+	"net"
 
+	"github.com/eclipse/paho.mqtt.golang/packets"
 	"github.com/kundan1301/message-broker/config"
 )
 
@@ -48,14 +50,46 @@ func NewBroker(config *config.Config) (*Broker, error) {
 }
 
 func (b *Broker) Start() {
-	// hostUrl := b.Config.Host + ":" + b.Config.MqttPort
-	// l, err := net.Listen("tcp", hostUrl)
-	// if err != nil {
-	// 	log.Println("error in listening mqtt", err)
-	// 	return
-	// }
-	// for {
+	startListening(b)
+}
 
-	// }
+func startListening(b *Broker) {
+	hostUrl := b.Config.Host + ":" + b.Config.MqttPort
+	l, err := net.Listen("tcp", hostUrl)
+	if err != nil {
+		log.Println("error in listening mqtt", err)
+		return
+	}
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			log.Println("error in accepting connection", err)
+		}
+		go b.handleConnection(conn)
+	}
+
+}
+
+func (b *Broker) handleConnection(conn net.Conn) {
+	packet, err := packets.ReadPacket(conn)
+	if err != nil {
+		log.Println("read connect packet error: ", err)
+		return
+	}
+	if packet == nil {
+		log.Println("received nil packet")
+		return
+	}
+	msg, ok := packet.(*packets.ConnectPacket)
+	if !ok {
+		log.Println("received msg that was not Connect")
+		return
+	}
+	log.Println(msg.FixedHeader)
+	log.Println("Hello")
+
+}
+
+func startTLSListening() {
 
 }
