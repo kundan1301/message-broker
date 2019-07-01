@@ -16,11 +16,12 @@ func main() {
 	}
 	customHttp.InitHttpClient()
 	customRedis.InitClient(config)
-	b, err := broker.NewBroker(config)
-	if err != nil {
+	broker.RunningBroker = nil
+	var err1 error
+	broker.RunningBroker, err1 = broker.NewBroker(config)
+	if err1 != nil {
 		log.Fatal("error in intializing new broker")
 	}
-	//fmt.Printf("%+v\n", b.Config)
-	b.Start()
+	broker.RunningBroker.Start()
 
 }

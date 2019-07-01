@@ -1,10 +1,15 @@
 package redis
 
 import (
+	"log"
 	"time"
 
 	"github.com/go-redis/redis"
 	"github.com/kundan1301/message-broker/config"
+)
+
+const (
+	connectedBrokerIPKey = "connectedBrokerIP"
 )
 
 var redisClient *redis.Client
@@ -28,4 +33,19 @@ func GetRedisClient() CustomRedisClient {
 		return redisClusterClient
 	}
 	return redisClient
+}
+
+// return previous broker if connected
+func CheckPrevConn(clientID string) string {
+	key := connectedBrokerIPKey + "/" + clientID
+	return GetRedisClient().Get(key).Val()
+}
+
+func SetNewConnInfo(clientID, node string) {
+	key := connectedBrokerIPKey + "/" + clientID
+	log.Println(clientID, node)
+	err := GetRedisClient().Set(key, node, 0).Err()
+	if err != nil {
+		log.Println("Error in setting node", err)
+	}
 }

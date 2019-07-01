@@ -12,6 +12,7 @@
         "Addrs":["localhost:6379"]
     
     },
-    "useRedisCluster": false
+    "useRedisCluster": false,
+    "authUrl":"http://localhost:8000"
 
 }

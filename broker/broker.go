@@ -4,15 +4,21 @@ import (
 	"errors"
 	"log"
 	"net"
+	"sync"
 
 	"github.com/eclipse/paho.mqtt.golang/packets"
 	"github.com/kundan1301/message-broker/config"
+	customHttp "github.com/kundan1301/message-broker/http"
+	customRedis "github.com/kundan1301/message-broker/redis"
 )
 
 // Broker store broker info
 type Broker struct {
-	Config *config.Config
+	Config  *config.Config
+	Clients sync.Map
 }
+
+var RunningBroker *Broker
 
 func checkConfig(config *config.Config) error {
 	if config.Host == "" {
@@ -65,12 +71,12 @@ func startListening(b *Broker) {
 		if err != nil {
 			log.Println("error in accepting connection", err)
 		}
-		go b.handleConnection(conn)
+		go handleConnection(b, conn)
 	}
 
 }
 
-func (b *Broker) handleConnection(conn net.Conn) {
+func handleConnection(b *Broker, conn net.Conn) {
 	packet, err := packets.ReadPacket(conn)
 	if err != nil {
 		log.Println("read connect packet error: ", err)
@@ -85,11 +91,57 @@ func (b *Broker) handleConnection(conn net.Conn) {
 		log.Println("received msg that was not Connect")
 		return
 	}
-	log.Println(msg.FixedHeader)
-	log.Println("Hello")
+	auth := customHttp.CheckAuth(b.Config.AuthUrl, msg.Username, string(msg.Password), msg.ClientIdentifier)
+	connack := packets.NewControlPacket(packets.Connack).(*packets.ConnackPacket)
+	if !auth {
+		connack.ReturnCode = packets.ErrRefusedNotAuthorised
+		connack.SessionPresent = false
+		connack.Write(conn)
+		conn.Close()
+		return
+	}
+	connack.ReturnCode = packets.Accepted
+	connack.SessionPresent = msg.CleanSession
+	err = connack.Write(conn)
+	if err != nil {
+		log.Println("error in accepting connection", err)
+		return
+	}
+	info := info{clientID: msg.ClientIdentifier,
+		keepalive: msg.Keepalive,
+	}
+	client := &Client{
+		conn,
+		info,
+	}
+	prevBrokerIp := customRedis.CheckPrevConn(info.clientID)
+	log.Println("prev", prevBrokerIp)
+	if prevBrokerIp != "" {
+		ClosePrevConnection(client.info.clientID)
+	}
+	customRedis.SetNewConnInfo(info.clientID, b.Config.NodeIP+":"+b.Config.HttpPort)
+	b.Clients.Store(info.clientID, client)
 
 }
 
 func startTLSListening() {
 
+}
+
+func ClosePrevConnection(clientID string) {
+	data, _ := RunningBroker.Clients.Load(clientID)
+	RunningBroker.Clients.Delete(clientID)
+	if data == nil {
+		return
+	}
+	client, ok := data.(*Client)
+	log.Println("closing connection", ok)
+	if ok {
+		err := client.conn.Close()
+		if err != nil {
+			log.Println("error in closing prev conn", err)
+		}
+		client.conn = nil
+		client = nil
+	}
 }
