@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatal("configure broker config error: ", err)
 	}
-	customHttp.InitHttpClient()
+	customHttp.InitHTTPClient()
 	customRedis.InitClient(config)
 	broker.RunningBroker = nil
 	var err1 error

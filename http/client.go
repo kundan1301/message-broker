@@ -10,16 +10,16 @@ import (
 
 var CustomClient *http.Client
 
-// InitHttpClient change default http client parameters.
-func InitHttpClient() {
+// InitHTTPClient change default http client parameters.
+func InitHTTPClient() {
 	defaultRoundTripper := http.DefaultTransport
 	defaultTransportPointer, ok := defaultRoundTripper.(*http.Transport)
 	if !ok {
 		panic(fmt.Sprintf("defaultRoundTripper not an *http.Transport"))
 	}
 	defaultTransport := *defaultTransportPointer
-	defaultTransport.MaxIdleConns = 100
-	defaultTransport.MaxIdleConnsPerHost = 100
+	defaultTransport.MaxIdleConns = 500
+	defaultTransport.MaxIdleConnsPerHost = 50
 	CustomClient = &http.Client{Transport: &defaultTransport}
 
 }
